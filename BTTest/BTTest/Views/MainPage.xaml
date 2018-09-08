@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Views.BTTest"
+             x:Class="BTTest.MainPage">
+
+    <StackLayout>
+        <Label Text="{Binding lbl1}"/>
+        <ListView x:Name="listView1" ItemsSource="{Binding ListDevices}" HasUnevenRows="False" RowHeight="80">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <StackLayout>
+                            <Label Text="{Binding Name,StringFormat='名前: {0:T}'}"/>
+                            <Label Text="{Binding UUID,StringFormat='UUID: {0:T}'}"/>
+                            <Label Text="{Binding Address,StringFormat='MACアドレス: {0:T}'}"/>
+                        </StackLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </StackLayout>
+
+</ContentPage>
