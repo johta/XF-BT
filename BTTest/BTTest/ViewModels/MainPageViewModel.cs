@@ -1,6 +1,7 @@
 ﻿using BTTest.Items;
 using BTTest.Models;
 using PropertyChanged;
+using System;
 using System.Collections.ObjectModel;
 using Xamarin.Forms;
 
@@ -18,6 +19,13 @@ namespace BTTest.ViewModels
         {
             lbl1 = "Bluetoothデバイス一覧";
             Initialize();
+            IBluetoothManager btMan = DependencyService.Get<IBluetoothManager>();
+            btMan.DataReceived += (sender, e) =>
+            {
+                Console.WriteLine("#debug {0}", e.Data);
+            };
+
+            btMan.Start();
         }
 
         public void Initialize()
@@ -44,6 +52,14 @@ namespace BTTest.ViewModels
             {
                 lbl1 = "Bluetoothデバイスがありません。";
             }
+
+            //btMan.DataReceived += (sender, e) =>
+            // {
+            //     Console.WriteLine("#debug {0}", e.Data);
+            // };
+
+            //btMan.Start();
+
         }
     }
 }
