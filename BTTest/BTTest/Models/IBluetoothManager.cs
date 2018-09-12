@@ -8,8 +8,6 @@ namespace BTTest.Models
     public interface IBluetoothManager
     {
         event EventHandler<DataEventArgs> DataReceived;
-        void getAllPairedDevices();
-
         List<BTDevice> GetBondedDevices();
         void Start();
 

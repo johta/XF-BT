@@ -52,14 +52,6 @@ namespace BTTest.ViewModels
             {
                 lbl1 = "Bluetoothデバイスがありません。";
             }
-
-            //btMan.DataReceived += (sender, e) =>
-            // {
-            //     Console.WriteLine("#debug {0}", e.Data);
-            // };
-
-            //btMan.Start();
-
         }
     }
 }

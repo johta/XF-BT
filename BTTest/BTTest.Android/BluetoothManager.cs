@@ -6,6 +6,7 @@ using Java.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 
 [assembly: Dependency(typeof(BTTest.Droid.BluetoothManager))]
@@ -15,19 +16,9 @@ namespace BTTest.Droid
     public class BluetoothManager : IBluetoothManager
     {
         public event EventHandler<DataEventArgs> DataReceived;
-        private const string Uuid = "00001124-0000-1000-8000-00805f9b34fb";
-        //private BluetoothServerSocket mServerSocket;
-        private BluetoothSocket mSocket;
-        private BluetoothAdapter mAdapter;
-        private BufferedReader reader;
-        private System.IO.Stream mStream;
-        private InputStreamReader mReader;
 
-        public string getDataFromDevice()
-        {
-            return reader.ReadLine();
-        }
-
+        private const string Uuid = "00001101-0000-1000-8000-00805f9b34fb";
+        
         private UUID getUUIDFromString()
         {
             return UUID.FromString(Uuid);
@@ -48,65 +39,45 @@ namespace BTTest.Droid
             aConnectedObject = null;
         }
 
-        private void openDeviceConnection(BluetoothDevice btDevice)
+        public void Start()
         {
-            try
-            {
-                mSocket = btDevice.CreateRfcommSocketToServiceRecord(getUUIDFromString());
-                System.Console.WriteLine("#debug get socket [{0}]", btDevice.Name);
-                //ブロック処理を書く
-                mSocket.Connect();
-                System.Console.WriteLine("#debug connect[{0}]", btDevice.Name);
-                //input stream
-                mStream = mSocket.InputStream;
-                System.Console.WriteLine("#debug open InputStream [{0}]", btDevice.Name);
-                //output stream
-                //msocket.OutputStream;
-                mReader = new InputStreamReader(mStream);
-                System.Console.WriteLine("#debug get StreamReader [{0}]", btDevice.Name);
-                reader = new BufferedReader(mReader);
-                System.Console.WriteLine("#debug get get BufferedReader [{0}]", btDevice.Name);
-            }
-            catch(IOException e)
-            {
-                close(mSocket);
-                close(mStream);
-                close(mReader);
-                e.PrintStackTrace();
-                throw e;
-                
-            }
-        }
-        public void getAllPairedDevices()
-        {
-            System.Console.WriteLine("#debug getAllPairedDevice()");
-            BluetoothAdapter btAdapter = BluetoothAdapter.DefaultAdapter;
+            var btAdapter = BluetoothAdapter.DefaultAdapter;
             var devices = btAdapter.BondedDevices;
             if (devices != null && devices.Count > 0)
             {
-                
-                foreach (var mDevice in devices)
+                foreach (var device in devices)
                 {
-                    openDeviceConnection(mDevice);
+                    try
+                    {
+                        var socket = device.CreateRfcommSocketToServiceRecord(getUUIDFromString());
+                        Task.Run(() =>
+                        {
+                            try
+                            {
+                                socket.Connect();
+                                System.Console.WriteLine("#debug connect to {0}", device.Name);
+                                var br = new BufferedReader(new InputStreamReader(socket.InputStream));
+                                string data;
+                                while ((data = br.ReadLine()) != null)
+                                {
+                                    DataReceived?.Invoke(this, new DataEventArgs(data));
+                                }
+                            }
+                            catch (IOException e)
+                            {
+                            }
+                            finally
+                            {
+                                socket.Close();
+                                System.Console.WriteLine("#debug close socket  {0}", device.Name);
+                            }
+                        });
+                    }
+                    catch (IOException e)
+                    {
+                    }
                 }
             }
-        }
-
-        public void Start()
-        {
-            System.Console.WriteLine("#debug location:Start()");
-            getAllPairedDevices();
-
-            System.Threading.Thread thread = new System.Threading.Thread(() =>
-            {
-                while (true)
-                {
-                    var data = getDataFromDevice();
-                    DataReceived?.Invoke(this, new DataEventArgs(data));
-                }
-            });
-            thread.IsBackground = true;
-            thread.Start();
         }
 
         private List<BTDevice> result = new List<BTDevice>();
@@ -128,8 +99,5 @@ namespace BTTest.Droid
             }
             return result;
         }
-
-
-
     }
 }
